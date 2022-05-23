@@ -17,7 +17,7 @@
 #                 name: azure-app-service
 #                 port:
 #                   number: 2000
-
+#################### https
 apiVersion: networking.k8s.io/v1
 # UPDATE API
 kind: Ingress
@@ -25,14 +25,20 @@ metadata:
   name: ingress-service
   annotations:
     kubernetes.io/ingress.class: 'azure/application-gateway'
+    appgw.ingress.kubernetes.io/ssl-redirect: "true"
     # appgw.ingress.kubernetes.io/backend-path-prefix: "/"
     # nginx.ingress.kubernetes.io/use-regex: 'true'
     # ADD ANNOTATION
     # nginx.ingress.kubernetes.io/rewrite-target: /$1
     # UPDATE ANNOTATION
 spec:
+  tls:
+    - hosts:
+      - <AppGW Public IP Host Name>.<region>.cloudapp.azure.com
+      secretName: aks-tls-akv
   rules:
-    - http:
+    - host: <AppGW Public IP Host Name>.<region>.cloudapp.azure.com
+      http:
         paths:
           - path: /*
             # UPDATE PATH
