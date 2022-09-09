@@ -27,7 +27,7 @@ RGNAME=smartbrain
 ```azurecli
 az group create -l $REGION -n $RGNAME 
 
-# Deploy template with in-line parameters 
+# Deploy template with in-line parameters. you might want tot change the --template-url in the line below to the latest version available here: https://aka.ms/AKSLZA/aksconstructionhelper
 az deployment group create -g $RGNAME --template-uri https://github.com/Azure/AKS-Construction/releases/download/0.8.2/main.json --parameters \
 	resourceName=aks-smartbrain \
 	upgradeChannel=stable \
@@ -85,4 +85,6 @@ cd ../..
 ```
 ## Next Step
 
-:arrow_forward: [Deploy and Smartbrain app](../smartbrain/README.md)
+If you are following the instructions in the Smartbrain repo, return to the next step there by clicking on this link below:
+
+:arrow_forward: [Deploy and Smartbrain app](https://github.com/mosabami/smartbrain/tree/main/smartbrain)
