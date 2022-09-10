@@ -1,13 +1,14 @@
 # Stage 1: Deploy a Simple Python (Flask) web app to AKS Landing Zone
 
-This is the sample Flask application for the Azure Quickstart [Deploy a Python (Django or Flask) web app to Azure App Service](https://docs.microsoft.com/en-us/azure/app-service/quickstart-python). In this stage you will follow the instructions below to deploy it into an AKS Landing Zone. Get started by creating the landing zone using AKS Deploy Helper using the commands provided below (you don't have to click on any of the links).
+This is the sample Flask application for the Azure Quickstart [Deploy a Python (Django or Flask) web app to Azure App Service](https://docs.microsoft.com/en-us/azure/app-service/quickstart-python). It is part of a multi-step process to deploy the smartbrain app but can also be used as a standalone guide. Access the main repo here: https://github.com/mosabami/smartbrain. 
 
+In this stage you will follow the instructions below to deploy it into an AKS Landing Zone. Get started by creating the landing zone using AKS Deploy Helper using the commands provided below (you don't have to click on any of the links).
 
 If you need an Azure account, you can [create on for free](https://azure.microsoft.com/en-us/free/).
 
 ## Getting started - AKS Deploy Helper
 
-We can leverage [AKS Deploy Helper](https://github.com/Azure/AKS-Construction) to quickly create a suitable environment with AKS cluster and Azure Appplicaton Gateway.
+We can leverage [AKS Deploy Helper](https://github.com/Azure/AKS-Construction) to quickly create a suitable environment with AKS cluster and Azure Applicaton Gateway.
 
 Begin deployment by running the commands below in a bash terminal. You can always use Azure cloud shell. This will deploy the following resources for the AKS landing zone:
 * AKS cluster
@@ -18,7 +19,8 @@ Begin deployment by running the commands below in a bash terminal. You can alway
 * Azure keyvault
 * Log analytics workspace
 
-To make the deployment more secure, you will only allow access to your cluster from your ip address. Get your ip address by typing the following in google: whats my ip in windows or entering `hostname -I` in linux or Azure cloudshell.
+To make the deployment more secure, you will only allow access to your cluster from your ip address. Get your ip address by typing the following in google: "Whats my ip" in windows or entering `hostname -I` in linux or Azure cloudshell.
+ > :warning: if the commands to deploy the cluster below don't work (likely because the static release used is outdated),or you dont like this configuration, generate your own command by using the (AKS Construction Helper)[https://aks.ms/AKSLZA/aksconstructionhelper]. Please note that some configurations wont work for the app deployment steps below without modification if you use a different configuration from the one below(eg if you decide to use a private cluster).
 
 ```bash
 REGION=< your region, eg eastus>
@@ -26,11 +28,19 @@ RGNAME=smartbrain
 ```
 ```azurecli
 az group create -l $REGION -n $RGNAME 
+```
 
-# Deploy template with in-line parameters. you might want tot change the --template-url in the line below to the latest version available here: https://aka.ms/AKSLZA/aksconstructionhelper
-az deployment group create -g $RGNAME --template-uri https://github.com/Azure/AKS-Construction/releases/download/0.8.2/main.json --parameters \
+Deploy template with in-line parameters. 
+
+> :warning: You might want to change the --template-url in the line below to the latest version available here: https://aka.ms/AKSLZA/aksconstructionhelper
+
+```bash
+az group create -l $REGION -n $RGNAME
+
+az deployment group create -g $RGNAME  --template-uri https://github.com/Azure/AKS-Construction/releases/download/0.8.9/main.json --parameters \
 	resourceName=aks-smartbrain \
 	upgradeChannel=stable \
+	agentCountMax=20 \
 	custom_vnet=true \
 	enable_aad=true \
 	AksDisableLocalAccounts=true \
@@ -42,16 +52,18 @@ az deployment group create -g $RGNAME --template-uri https://github.com/Azure/AK
 	retentionInDays=30 \
 	networkPolicy=azure \
 	azurepolicy=audit \
+	authorizedIPRanges="[\"<your ip address>\"]" \
 	ingressApplicationGateway=true \
 	appGWcount=0 \
 	appGWsku=WAF_v2 \
 	appGWmaxCount=10 \
 	appgwKVIntegration=true \
-	azureKeyvaultSecretsProvider=true \
-	createKV=true \
-	kvOfficerRolePrincipalId=$(az ad signed-in-user show --query id --out tsv)
+	keyVaultAksCSI=true \
+	keyVaultCreate=true \
+	keyVaultOfficerRolePrincipalId=$(az ad signed-in-user show --query id --out tsv)
 ```
 
+## Deploy the application
 After cluster creation we can install the application onto the cluster
 
 ```bash
